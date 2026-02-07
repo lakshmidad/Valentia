@@ -19,6 +19,11 @@
     </nav>
 
     <main id="app">
+        <!-- Audio Element for Music -->
+        <audio id="bg-music" loop>
+            <source src="https://assets.mixkit.co/music/preview/mixkit-romantic-surprise-691.mp3" type="audio/mpeg">
+        </audio>
+
         <!-- 1. Landing Page Section -->
         <section id="landing-page" class="view-section active">
             <div class="hero-content">
@@ -26,11 +31,10 @@
                 <p class="subtitle">Create a magical, timed digital surprise for your Valentine today.</p>
                 <div class="cta-group">
                     <button id="start-create-btn" class="btn-primary">Create a HeartLink 💘</button>
-                    <button id="view-demo-btn" class="btn-secondary">See an Example</button>
+                    <button id="view-gallery-btn" class="btn-secondary">My Gallery 📸</button>
                 </div>
             </div>
 
-            <!-- Floating Background Elements -->
             <div class="floating-hearts">
                 <div class="heart h1">❤️</div>
                 <div class="heart h2">💖</div>
@@ -39,70 +43,71 @@
             </div>
         </section>
 
-        <!-- 2. Creator Studio Section (Hidden by default) -->
+        <!-- 2. Creator Studio Section (Updated Flow) -->
         <section id="creator-studio" class="view-section hidden">
-            <div class="glass-card wizard-card">
-                <!-- Step 1: The Basics -->
-                <div class="step active" data-step="1">
-                    <h2>Who is this for?</h2>
-                    <div class="form-group">
-                        <label>Recipient's Name</label>
-                        <input type="text" id="recipient-name" placeholder="e.g. My Love">
+            <!-- Step 1: Create Message Page -->
+            <div class="glass-card wizard-card step active" data-step="1">
+                <h2>Create Your Message 💌</h2>
+
+                <div class="form-group">
+                    <label>Recipient's Name / Email</label>
+                    <input type="text" id="recipient-name" placeholder="e.g. Sarah or sarah@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="sender-name" placeholder="e.g. Your Secret Admirer">
+                </div>
+
+                <div class="form-group">
+                    <label>Your Message <span id="char-count">0/500</span></label>
+                    <textarea id="message-text" placeholder="You make my heart skip a beat..."></textarea>
+                    <button id="ai-cupid-btn" class="btn-xs">🤖 AI Cupid Help</button>
+                </div>
+
+                <div class="media-upload form-group">
+                    <label>Add a Photo or Voice Note (Optional)</label>
+                    <input type="file" id="media-file" accept="image/*,audio/*" class="file-input">
+                </div>
+
+                <div class="step-nav right-align">
+                    <button class="btn-primary next-step" data-next="2">Next: Choose Theme 👉</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Theme Selection Page -->
+            <div class="glass-card wizard-card step hidden" data-step="2">
+                <h2>Choose a Theme 💖</h2>
+                <p>Preview how your message will look.</p>
+
+                <div class="theme-cards-container">
+                    <div class="theme-card active" data-theme="cute">
+                        <div class="theme-preview p-cute">🌸</div>
+                        <h3>Cute</h3>
                     </div>
-                    <div class="form-group">
-                        <label>Your Name</label>
-                        <input type="text" id="sender-name" placeholder="e.g. Secret Admirer">
+                    <div class="theme-card" data-theme="romantic">
+                        <div class="theme-preview p-romantic">🌹</div>
+                        <h3>Romantic</h3>
                     </div>
-                    <div class="form-group">
-                        <label>Your Message <span id="char-count">0/500</span></label>
-                        <textarea id="message-text" placeholder="Write something from the heart..."></textarea>
-                        <button id="ai-cupid-btn" class="btn-xs">🤖 AI Cupid Help</button>
-                    </div>
-                    <div class="step-nav">
-                        <button class="btn-primary next-step" data-next="2">Next: Customize 👉</button>
+                    <div class="theme-card" data-theme="neon">
+                        <div class="theme-preview p-minimal">✨</div>
+                        <h3>Minimal</h3>
                     </div>
                 </div>
 
-                <!-- Step 2: Customization -->
-                <div class="step hidden" data-step="2">
-                    <h2>Set the Vibe</h2>
-                    <div class="theme-selector">
-                        <p>Choose a Theme:</p>
-                        <div class="theme-options">
-                            <button class="theme-btn active" data-theme="cute">🌸 Cute</button>
-                            <button class="theme-btn" data-theme="romantic">🌹 Romantic</button>
-                            <button class="theme-btn" data-theme="neon">🌃 Neon</button>
-                        </div>
-                    </div>
-                    <div class="media-upload">
-                        <p>Add a Photo or Voice Note (Optional)</p>
-                        <input type="file" id="media-file" accept="image/*,audio/*">
-                    </div>
-                    <div class="step-nav">
-                        <button class="btn-secondary prev-step" data-prev="1">Back</button>
-                        <button class="btn-primary next-step" data-next="3">Next: Settings 👉</button>
-                    </div>
+                <!-- Settings (kept compact) -->
+                <div class="setting-group compact-settings mt-4">
+                    <label>Unlock Method (Optional)</label>
+                    <select id="unlock-method">
+                        <option value="timer">⏱️ Countdown Timer</option>
+                        <option value="location">📍 Location-Based Unlock</option>
+                    </select>
+                    <input type="datetime-local" id="unlock-time" class="mt-2 text-sm">
                 </div>
 
-                <!-- Step 3: Settings -->
-                <div class="step hidden" data-step="3">
-                    <h2>The Reveal</h2>
-                    <div class="setting-group">
-                        <label>Unlock Method</label>
-                        <select id="unlock-method">
-                            <option value="timer">⏱️ Countdown Timer</option>
-                            <option value="scratch">✨ Scratch to Reveal</option>
-                            <option value="location">📍 Location (Love Lo-Jack)</option>
-                        </select>
-                    </div>
-                    <div class="setting-group" id="timer-settings">
-                        <label>Unlock Time</label>
-                        <input type="datetime-local" id="unlock-time">
-                    </div>
-                    <div class="step-nav">
-                        <button class="btn-secondary prev-step" data-prev="2">Back</button>
-                        <button class="btn-primary" id="generate-btn">Generate HeartLink 🚀</button>
-                    </div>
+                <div class="step-nav">
+                    <button class="btn-secondary prev-step" data-prev="1">Back</button>
+                    <button class="btn-primary" id="generate-btn">Generate Secret Link 🚀</button>
                 </div>
             </div>
         </section>
@@ -110,17 +115,18 @@
         <!-- 3. Success / Link Ready Section -->
         <section id="success-view" class="view-section hidden">
             <div class="glass-card center-text">
-                <h2>💌 It's Ready!</h2>
-                <p>Your secret link has been created.</p>
+                <h2>Your Secret Link is Ready! 💌</h2>
+                <p>Share this link to surprise your special someone!</p>
 
                 <div class="link-box">
                     <input type="text" id="share-link-input" readonly value="Generating...">
-                    <button id="copy-link-btn" class="btn-primary">Copy</button>
+                    <button id="copy-link-btn" class="btn-primary">Copy Link</button>
                 </div>
 
                 <button id="create-another-btn" class="btn-secondary-sm">Create Another</button>
             </div>
         </section>
+
         <!-- 4. RECIPIENT: Lock Screen -->
         <section id="reveal-lock-screen" class="view-section hidden">
             <div class="glass-card center-text">
@@ -129,7 +135,6 @@
                 <p>For <span id="lock-recipient-name" class="highlight-text">...</span></p>
 
                 <div id="lock-status">
-                    <!-- Timer or Unlock Button will appear here -->
                     <button id="unlock-btn" class="btn-primary pulsate">Tap to Open 💖</button>
                     <div id="countdown-display" class="hidden">
                         <h3>Unlocking in...</h3>
@@ -141,6 +146,10 @@
 
         <!-- 5. RECIPIENT: The Message -->
         <section id="message-content" class="view-section hidden">
+            <div class="control-bar">
+                <button id="music-toggle-btn" class="icon-btn">🎵 Play Music</button>
+            </div>
+
             <div class="glass-card message-card">
                 <div class="polaroid-frame hidden" id="msg-photo-container">
                     <img id="msg-photo" src="" alt="Memory">
@@ -160,10 +169,25 @@
                 <div class="message-footer">
                     <button id="replay-btn" class="btn-secondary-sm">Replay ✨</button>
                     <button id="create-own-btn" class="btn-secondary-sm">Create Your Own</button>
+                    <button id="download-btn" class="btn-secondary-sm">💾 Save Memory</button>
                 </div>
             </div>
         </section>
+
+        <!-- 6. Memory Gallery Section -->
+        <section id="memory-gallery" class="view-section hidden">
+            <div class="glass-card wizard-card">
+                <h2>Memory Gallery 📸</h2>
+                <p>Messages you've opened:</p>
+                <div id="gallery-list" class="gallery-grid">
+                    <!-- Gallery items will appear here -->
+                    <p class="empty-msg">No memories found yet.</p>
+                </div>
+                <button id="back-home-btn" class="btn-secondary-sm mt-4">Back to Home</button>
+            </div>
+        </section>
     </main>
+    <script src="js/confetti.js"></script>
     <script src="js/main.js"></script>
 </body>
 

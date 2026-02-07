@@ -517,3 +517,101 @@ p {
     margin-top: 1rem;
     letter-spacing: 2px;
 }
+
+/* -----------------------------------------------------------
+   THEME CARDS (Step 2)
+   ----------------------------------------------------------- */
+.theme-cards-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.theme-card {
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    transition: var(--trans-medium);
+}
+
+.theme-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.theme-card.active {
+    border-color: var(--color-love-red);
+    background: white;
+    box-shadow: 0 5px 15px rgba(220, 20, 60, 0.2);
+}
+
+.theme-preview {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+/* -----------------------------------------------------------
+   MUSIC & CONTROLS
+   ----------------------------------------------------------- */
+.control-bar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.icon-btn {
+    background: var(--color-love-red);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius-pill);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--trans-medium);
+}
+
+.icon-btn:hover {
+    transform: scale(1.05);
+}
+
+/* -----------------------------------------------------------
+   MEMORY GALLERY
+   ----------------------------------------------------------- */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.gallery-item {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: var(--trans-fast);
+}
+
+.gallery-item:hover {
+    background: white;
+    transform: translateY(-2px);
+}
+
+.gallery-date {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.empty-msg {
+    grid-column: 1 / -1;
+    color: var(--color-text-muted);
+    font-style: italic;
+}

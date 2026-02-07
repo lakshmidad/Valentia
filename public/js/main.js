@@ -5,25 +5,32 @@ document.addEventListener('DOMContentLoaded', () => {
         creator: document.getElementById('creator-studio'),
         success: document.getElementById('success-view'),
         lock: document.getElementById('reveal-lock-screen'),
-        message: document.getElementById('message-content')
+        message: document.getElementById('message-content'),
+        gallery: document.getElementById('memory-gallery')
     };
 
     const buttons = {
         createNav: document.getElementById('nav-create-btn'),
         startCreate: document.getElementById('start-create-btn'),
+        viewGallery: document.getElementById('view-gallery-btn'),
         createAnother: document.getElementById('create-another-btn'),
-        createOwn: document.getElementById('create-own-btn') // New button in message view
+        createOwn: document.getElementById('create-own-btn'),
+        backHome: document.getElementById('back-home-btn')
     };
 
     function switchView(viewName) {
         Object.values(views).forEach(el => {
-            el.classList.add('hidden');
-            el.classList.remove('active');
+            if (el) {
+                el.classList.add('hidden');
+                el.classList.remove('active');
+            }
         });
-        views[viewName].classList.remove('hidden');
-        setTimeout(() => {
-            views[viewName].classList.add('active');
-        }, 10);
+        if (views[viewName]) {
+            views[viewName].classList.remove('hidden');
+            setTimeout(() => {
+                views[viewName].classList.add('active');
+            }, 10);
+        }
     }
 
     // --- ID parsing from URL ---
@@ -34,14 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageId = path.split('/m/')[1];
         loadMessage(messageId);
     } else {
-        // Default Landing Page Logic
         switchView('landing');
     }
 
     // --- Message Retrieval Logic (Recipient View) ---
     async function loadMessage(id) {
         try {
-            // Fetch message metadata (locked state)
             const response = await fetch(`/api/message/${id}`);
             const data = await response.json();
 
@@ -51,10 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            // Save to Local History
+            saveToGallery(id, data.sender, data.recipient, 'received');
+
             // Populate Lock Screen
             document.getElementById('lock-recipient-name').textContent = data.recipient;
 
-            // Handle Unlock Method
+            // Handle Unlock
             const unlockBtn = document.getElementById('unlock-btn');
             const countdownDisplay = document.getElementById('countdown-display');
 
@@ -65,21 +73,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const unlockTime = new Date(data.unlockDate).getTime();
 
                 if (now < unlockTime) {
-                    // Timer Active
                     unlockBtn.classList.add('hidden');
                     countdownDisplay.classList.remove('hidden');
                     startCountdown(unlockTime);
                 } else {
-                    // Ready to open
                     unlockBtn.classList.remove('hidden');
-                    countdownDisplay.classList.add('hidden');
                 }
             } else {
-                // Default tap to open
                 unlockBtn.classList.remove('hidden');
             }
 
-            // Bind Unlock Action
             unlockBtn.onclick = () => revealMessage(data);
 
         } catch (error) {
@@ -98,28 +101,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearInterval(interval);
                 document.getElementById('countdown-display').classList.add('hidden');
                 document.getElementById('unlock-btn').classList.remove('hidden');
-                // Optional: Play notification sound
                 return;
             }
 
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
             timerDigits.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
         }, 1000);
     }
-
     function pad(n) { return n < 10 ? '0' + n : n; }
 
     function revealMessage(data) {
-        // Populate specific message fields
         document.getElementById('msg-header').textContent = `Happy Valentine's, ${data.recipient}!`;
         document.getElementById('msg-text').textContent = data.content;
         document.getElementById('msg-sender').textContent = data.sender;
 
-        // Populate Media (if any)
         const photoContainer = document.getElementById('msg-photo-container');
         const photoImg = document.getElementById('msg-photo');
 
@@ -130,40 +127,90 @@ document.addEventListener('DOMContentLoaded', () => {
             photoContainer.classList.add('hidden');
         }
 
-        // Apply Theme
-        document.body.className = ''; // Reset
-        document.body.classList.add(`theme-${data.theme}`);
+        // Apply Theme Class to Body
+        document.body.className = '';
+        if (data.theme) document.body.classList.add(`theme-${data.theme}`);
 
         switchView('message');
 
-        // Trigger Consfetti/Animations here
+        // Effects
         triggerConfetti();
+        // Auto-play music if toggle is on (browser might block auto-play without interaction)
+        // We'll let user toggle it manually or try to play
+        tryPlayMusic();
     }
 
     function triggerConfetti() {
-        console.log("🎉 Confetti Pop!");
-        // (Implementation of canvas confetti would go here)
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff0000', '#ff69b4', '#ffffff']
+            });
+        }
     }
 
-    // --- Creation Wizard Logic ---
+    // --- Music Logic ---
+    const audio = document.getElementById('bg-music');
+    const musicBtn = document.getElementById('music-toggle-btn');
+    let isPlaying = false;
 
-    // Navigation Listeners
+    function tryPlayMusic() {
+        audio.volume = 0.5;
+        audio.play().then(() => {
+            isPlaying = true;
+            updateMusicBtn();
+        }).catch(err => {
+            console.log("Auto-play blocked, user must interact.");
+            isPlaying = false;
+            updateMusicBtn();
+        });
+    }
+
+    if (musicBtn) {
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+            } else {
+                audio.play();
+            }
+            isPlaying = !isPlaying;
+            updateMusicBtn();
+        });
+    }
+
+    function updateMusicBtn() {
+        musicBtn.textContent = isPlaying ? "⏸ Pause Music" : "🎵 Play Music";
+    }
+
+    // --- Wizard & Creation Logic ---
     if (buttons.createNav) buttons.createNav.addEventListener('click', () => switchView('creator'));
     if (buttons.startCreate) buttons.startCreate.addEventListener('click', () => switchView('creator'));
     if (buttons.createAnother) buttons.createAnother.addEventListener('click', () => { resetWizard(); switchView('creator'); });
     if (buttons.createOwn) buttons.createOwn.addEventListener('click', () => {
-        window.history.pushState({}, "", "/"); // Reset URL
+        window.history.pushState({}, "", "/");
         resetWizard();
         switchView('creator');
     });
+    if (buttons.viewGallery) buttons.viewGallery.addEventListener('click', () => { loadGallery(); switchView('gallery'); });
+    if (buttons.backHome) buttons.backHome.addEventListener('click', () => switchView('landing'));
 
+    // Step Navigation
     const steps = document.querySelectorAll('.step');
     const nextBtns = document.querySelectorAll('.next-step');
     const prevBtns = document.querySelectorAll('.prev-step');
 
     function showStep(stepIndex) {
-        steps.forEach(step => step.classList.add('hidden'));
-        document.querySelector(`.step[data-step="${stepIndex}"]`).classList.remove('hidden');
+        steps.forEach(step => {
+            step.classList.add('hidden');
+            step.classList.remove('active');
+        });
+        const target = document.querySelector(`.step[data-step="${stepIndex}"]`);
+        if (target) {
+            target.classList.remove('hidden');
+            target.classList.add('active');
+        }
     }
 
     nextBtns.forEach(btn => {
@@ -174,90 +221,127 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => showStep(e.target.dataset.prev));
     });
 
+    // Theme Selection (Cards)
+    const themeCards = document.querySelectorAll('.theme-card');
+    let selectedTheme = 'cute';
+
+    themeCards.forEach(card => {
+        card.addEventListener('click', () => {
+            themeCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            selectedTheme = card.dataset.theme;
+        });
+    });
+
+    // Generate
+    const generateBtn = document.getElementById('generate-btn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', async () => {
+            const recipient = document.getElementById('recipient-name').value;
+            const sender = document.getElementById('sender-name').value;
+            const content = document.getElementById('message-text').value;
+            const unlockMethod = document.getElementById('unlock-method').value;
+            const unlockDate = document.getElementById('unlock-time').value;
+            const mediaFile = document.getElementById('media-file').files[0];
+
+            if (!recipient || !content || !sender) {
+                alert("Please fill in recipient, name, and message!");
+                return;
+            }
+
+            const originalText = generateBtn.textContent;
+            generateBtn.textContent = "Creating Magic... ✨";
+            generateBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('sender', sender);
+                formData.append('recipient', recipient);
+                formData.append('content', content);
+                formData.append('theme', selectedTheme);
+                formData.append('unlockMethod', unlockMethod);
+                if (unlockDate) formData.append('unlockDate', unlockDate);
+                if (mediaFile) formData.append('media', mediaFile);
+
+                const response = await fetch('/api/create', { method: 'POST', body: formData });
+                const result = await response.json();
+
+                if (result.success) {
+                    const shareLink = `${window.location.origin}/m/${result.id}`;
+                    document.getElementById('share-link-input').value = shareLink;
+                    saveToGallery(result.id, sender, recipient, 'sent');
+                    switchView('success');
+                } else {
+                    alert("Error: " + result.error);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Server Error.");
+            } finally {
+                generateBtn.textContent = originalText;
+                generateBtn.disabled = false;
+            }
+        });
+    }
+
+    // Copy Link
+    const copyBtn = document.getElementById('copy-link-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const linkInput = document.getElementById('share-link-input');
+            linkInput.select();
+            document.execCommand('copy');
+            copyBtn.textContent = "Copied! 👍";
+            setTimeout(() => copyBtn.textContent = "Copy Link", 2000);
+        });
+    }
+
     function resetWizard() {
         showStep(1);
         document.getElementById('recipient-name').value = '';
         document.getElementById('sender-name').value = '';
         document.getElementById('message-text').value = '';
         document.getElementById('media-file').value = '';
-        document.getElementById('share-link-input').value = '';
-        // Reset theme to default
+        selectedTheme = 'cute';
+        themeCards.forEach(c => c.classList.remove('active'));
+        if (themeCards[0]) themeCards[0].classList.add('active');
     }
 
-    // Theme Selector
-    const themeBtns = document.querySelectorAll('.theme-btn');
-    let selectedTheme = 'cute';
+    // --- Gallery Logic (LocalStorage) ---
+    function saveToGallery(id, sender, recipient, type) {
+        const memories = JSON.parse(localStorage.getItem('heartlink_memories') || '[]');
+        // Avoid duplicates
+        if (!memories.find(m => m.id === id)) {
+            memories.unshift({
+                id, sender, recipient, type, date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('heartlink_memories', JSON.stringify(memories));
+        }
+    }
 
-    themeBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            themeBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedTheme = btn.dataset.theme;
-        });
-    });
+    function loadGallery() {
+        const galleryList = document.getElementById('gallery-list');
+        const memories = JSON.parse(localStorage.getItem('heartlink_memories') || '[]');
 
-    // Generate Button (REAL API Call with FormData)
-    const generateBtn = document.getElementById('generate-btn');
-    generateBtn.addEventListener('click', async () => {
-        const recipient = document.getElementById('recipient-name').value;
-        const sender = document.getElementById('sender-name').value;
-        const content = document.getElementById('message-text').value;
-        const unlockMethod = document.getElementById('unlock-method').value;
-        const unlockDate = document.getElementById('unlock-time').value;
-        const mediaFile = document.getElementById('media-file').files[0];
+        galleryList.innerHTML = '';
 
-        if (!recipient || !content || !sender) {
-            alert("Please fill in all fields!");
+        if (memories.length === 0) {
+            galleryList.innerHTML = '<p class="empty-msg">No memories found yet.</p>';
             return;
         }
 
-        const originalText = generateBtn.textContent;
-        generateBtn.textContent = "Creating Link... 💘";
-        generateBtn.disabled = true;
-
-        try {
-            // Use FormData to handle file uploads
-            const formData = new FormData();
-            formData.append('sender', sender);
-            formData.append('recipient', recipient);
-            formData.append('content', content);
-            formData.append('theme', selectedTheme);
-            formData.append('unlockMethod', unlockMethod);
-            if (unlockDate) formData.append('unlockDate', unlockDate);
-            if (mediaFile) formData.append('media', mediaFile);
-
-            const response = await fetch('/api/create', {
-                method: 'POST',
-                body: formData // No Content-Type header needed (browser handles boundary)
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Success State
-                const shareLink = `${window.location.origin}/m/${result.id}`;
-                document.getElementById('share-link-input').value = shareLink;
-                switchView('success');
-            } else {
-                alert("Error creating link: " + result.error);
-            }
-
-        } catch (error) {
-            console.error(error);
-            alert("Server Error. Please try again.");
-        } finally {
-            generateBtn.textContent = originalText;
-            generateBtn.disabled = false;
-        }
-    });
-
-    // Copy Link
-    const copyBtn = document.getElementById('copy-link-btn');
-    copyBtn.addEventListener('click', () => {
-        const linkInput = document.getElementById('share-link-input');
-        linkInput.select();
-        document.execCommand('copy');
-        copyBtn.textContent = "Copied! 👍";
-        setTimeout(() => copyBtn.textContent = "Copy", 2000);
-    });
+        memories.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            div.innerHTML = `
+                <div class="gallery-icon">${m.type === 'sent' ? '📤' : '💌'}</div>
+                <h4>${m.recipient}</h4>
+                <p class="gallery-date">${m.date}</p>
+            `;
+            div.onclick = () => {
+                window.location.href = `/m/${m.id}`;
+            };
+            galleryList.appendChild(div);
+        });
+    }
 });
