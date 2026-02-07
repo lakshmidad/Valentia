@@ -1,0 +1,22 @@
+{
+  "name": "valentine",
+  "version": "1.0.0",
+  "description": "> **\"Connecting hearts, one secure link at a time.\"**",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "mongoose": "^9.1.6",
+    "multer": "^2.0.2"
+  }
+}
